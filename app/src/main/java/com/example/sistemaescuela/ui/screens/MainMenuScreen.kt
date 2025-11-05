@@ -1,16 +1,19 @@
 package com.example.sistemaescuela.ui.screens
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Task
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,12 +26,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -58,7 +60,6 @@ const val CONTACT_NAME_ARG = "contactName"
 @Composable
 fun MainMenuScreen() {
     val navController = rememberNavController()
-    var menuExpanded by remember { mutableStateOf(false) }
 
     val bottomNavScreens = listOf(Screen.PROFILE, Screen.ACADEMIC_PROGRESS, Screen.TASKS, Screen.MESSAGING)
 
@@ -76,7 +77,18 @@ fun MainMenuScreen() {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(currentScreen.label) },
+                title = {
+                    if (currentScreen.route.startsWith("chat")) {
+                        val contactName = navBackStackEntry?.arguments?.getString(CONTACT_NAME_ARG) ?: ""
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.size(32.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(contactName)
+                        }
+                    } else {
+                        Text(currentScreen.label)
+                    }
+                },
                 navigationIcon = {
                     if (!isTopLevelScreen) {
                         IconButton(onClick = { navController.navigateUp() }) {
@@ -85,42 +97,30 @@ fun MainMenuScreen() {
                     }
                 },
                 actions = {
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Más opciones")
+                    if (isTopLevelScreen) { // Only show action icons on top level screens
+                        IconButton(onClick = { navController.navigate(Screen.ALERTS.route) }) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Alertas")
                         }
-                        DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                            DropdownMenuItem(text = { Text("Alertas") }, onClick = {
-                                navController.navigate(Screen.ALERTS.route)
-                                menuExpanded = false
-                            })
-                            DropdownMenuItem(text = { Text("Configuración") }, onClick = {
-                                navController.navigate(Screen.SETTINGS.route)
-                                menuExpanded = false
-                            })
+                        IconButton(onClick = { navController.navigate(Screen.SETTINGS.route) }) {
+                            Icon(Icons.Default.Settings, contentDescription = "Configuración")
                         }
                     }
                 }
             )
         },
         bottomBar = {
-            NavigationBar {
-                bottomNavScreens.forEach { screen ->
-                    val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
-                    NavigationBarItem(
-                        icon = { Icon(screen.icon!!, contentDescription = screen.label) },
-                        label = { Text(screen.label, textAlign = TextAlign.Center) },
-                        selected = isSelected,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                // By removing the popUpTo block, we allow a back stack of tabs to build.
-                                launchSingleTop = true
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer
+            if (isTopLevelScreen) { // Only show bottom bar on top level screens
+                NavigationBar {
+                    bottomNavScreens.forEach { screen ->
+                        val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
+                        NavigationBarItem(
+                            icon = { Icon(screen.icon!!, contentDescription = screen.label) },
+                            label = { Text(screen.label, textAlign = TextAlign.Center) },
+                            selected = isSelected,
+                            onClick = { navController.navigate(screen.route) { launchSingleTop = true } },
+                            colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.secondaryContainer)
                         )
-                    )
+                    }
                 }
             }
         }

@@ -77,10 +77,6 @@ fun LoginScreen(onLoginClick: () -> Unit) {
         TextButton(onClick = { /* TODO: Handle forgot password */ }) {
             Text("¿Olvidaste tu contraseña?")
         }
-
-        TextButton(onClick = { /* TODO: Handle registration */ }) {
-            Text("¿No tienes cuenta? Regístrate")
-        }
     }
 }
 
