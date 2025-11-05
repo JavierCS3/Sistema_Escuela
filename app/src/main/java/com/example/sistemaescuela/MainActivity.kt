@@ -9,8 +9,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.sistemaescuela.ui.screens.LoginScreen
-import com.example.sistemaescuela.ui.screens.MainMenuScreen
+import com.example.sistemaescuela.ui.screens.*
 import com.example.sistemaescuela.ui.theme.SistemaEscuelaTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,14 +33,38 @@ fun SistemaEscuelaApp() {
             LoginScreen(
                 onLoginClick = {
                     navController.navigate("main_menu") {
-                        // This removes the login screen from the back stack
                         popUpTo("login") { inclusive = true }
                     }
-                }
+                },
+                onActivateAccountClick = { navController.navigate("activation") },
+                onForgotPasswordClick = { navController.navigate("forgot_password") }
+            )
+        }
+        composable("activation") {
+            ActivationScreen(
+                onActivateClick = {
+                    navController.navigate("main_menu") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onNavigateUp = { navController.popBackStack() }
+            )
+        }
+        composable("forgot_password") {
+            ForgotPasswordScreen(
+                onSendLinkClick = { navController.popBackStack() },
+                onNavigateUp = { navController.popBackStack() }
             )
         }
         composable("main_menu") {
-            MainMenuScreen()
+            MainMenuScreen(
+                onLogoutClick = {
+                    navController.navigate("login") {
+                        // Clear the entire back stack up to the root
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }
@@ -50,7 +73,6 @@ fun SistemaEscuelaApp() {
 @Composable
 fun DefaultPreview() {
     SistemaEscuelaTheme {
-        // Preview the LoginScreen as it's the entry point
-        LoginScreen(onLoginClick = {})
+        LoginScreen(onLoginClick = {}, onActivateAccountClick = {}, onForgotPasswordClick = {})
     }
 }
