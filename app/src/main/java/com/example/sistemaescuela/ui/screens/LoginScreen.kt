@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 // Asegúrate de importar tus clases de red correctamente:
 import com.example.sistemaescuela.network.RetrofitClient
 import com.example.sistemaescuela.network.LoginRequest
+import com.example.sistemaescuela.network.TokenManager
 
 @Composable
 fun LoginScreen(
@@ -81,12 +82,18 @@ fun LoginScreen(
 
                                 if (response.isSuccessful) {
                                     val data = response.body()
-                                    val nombre = data?.usuario?.nombre
+                                    val token = data?.token
+                                    val usuario = data?.usuario
+                                    if (token != null && usuario != null) {
+                                        val tokenManager = TokenManager(context)
+                                        // Pasamos el estudianteId que viene del backend
+                                        tokenManager.saveSession(token, usuario.nombre, usuario.rol, usuario.id, usuario.estudianteId)
 
-                                    Toast.makeText(context, "Bienvenido $nombre", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "Bienvenido ${usuario.nombre}", Toast.LENGTH_LONG).show()
 
-                                    // Si tu navegación la maneja el padre, llamas a onLoginClick
-                                    onLoginClick()
+                                        // 2. Navegamos (esto ya lo tienes)
+                                        onLoginClick()
+                                    }
                                 } else {
                                     println("ERROR LOGIN: Código ${response.code()} - Cuerpo: ${response.errorBody()?.string()}")
                                     Toast.makeText(context, "Error: Credenciales inválidas", Toast.LENGTH_LONG).show()

@@ -15,5 +15,6 @@ data class LoginResponse(
 data class UsuarioData(
     val id: String,
     val nombre: String,
-    val rol: String
+    val rol: String,
+    val estudianteId: String? = null
 )
