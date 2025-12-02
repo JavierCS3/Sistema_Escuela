@@ -16,22 +16,22 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-// Asegúrate de importar tus clases de red correctamente:
+
 import com.example.sistemaescuela.network.RetrofitClient
 import com.example.sistemaescuela.network.LoginRequest
 import com.example.sistemaescuela.network.TokenManager
 
 @Composable
 fun LoginScreen(
-    onLoginClick: () -> Unit, // (Opcional: Puedes quitar esto si la navegación la haces aquí directo)
+    onLoginClick: () -> Unit,
     onActivateAccountClick: () -> Unit,
     onForgotPasswordClick: () -> Unit
 ) {
-    // 1. ¡AQUÍ VAN LAS VARIABLES! (Dentro de la función)
+    // 1. Necesitamos un contexto
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    // Tus variables de estado
+    //  variables de estado
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -75,7 +75,7 @@ fun LoginScreen(
                         coroutineScope.launch {
                             try {
                                 // Hacemos la petición
-                                // CORRECCIÓN: Usamos 'username' que es tu variable, y lo mandamos como 'correo'
+
                                 val response = RetrofitClient.api.login(
                                     LoginRequest(email = username, password)
                                 )
@@ -87,11 +87,11 @@ fun LoginScreen(
                                     if (token != null && usuario != null) {
                                         val tokenManager = TokenManager(context)
                                         // Pasamos el estudianteId que viene del backend
-                                        tokenManager.saveSession(token, usuario.nombre, usuario.rol, usuario.id, usuario.estudianteId)
+                                        tokenManager.saveSession(token, usuario.nombre, usuario.rol, usuario.id, usuario.estudianteId, usuario.matricula)
 
                                         Toast.makeText(context, "Bienvenido ${usuario.nombre}", Toast.LENGTH_LONG).show()
 
-                                        // 2. Navegamos (esto ya lo tienes)
+                                        // 2. Navegamos
                                         onLoginClick()
                                     }
                                 } else {

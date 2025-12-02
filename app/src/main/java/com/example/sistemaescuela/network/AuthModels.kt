@@ -13,6 +13,7 @@ data class LoginResponse(
 )
 
 data class UsuarioData(
+    val matricula: String? = null,
     val id: String,
     val nombre: String,
     val rol: String,

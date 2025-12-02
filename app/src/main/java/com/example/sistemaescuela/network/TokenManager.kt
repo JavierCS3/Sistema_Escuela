@@ -8,6 +8,7 @@ class TokenManager(context: Context) {
     private val editor = prefs.edit()
 
     companion object {
+        private const val KEY_MATRICULA = "user_matricula" // Cambiado a KEY_MATRICULA
         private const val KEY_STUDENT_ID = "student_id"
         private const val KEY_TOKEN = "jwt_token"
         private const val KEY_USER_NAME = "user_name"
@@ -15,21 +16,27 @@ class TokenManager(context: Context) {
         private const val KEY_USER_ID = "user_id"
     }
 
-    fun saveSession(token: String, name: String, role: String, id: String, studentId: String?) {
+    fun saveSession(token: String, name: String, role: String, id: String, studentId: String?, matricula: String?) {
         editor.putString(KEY_TOKEN, token)
         editor.putString(KEY_USER_NAME, name)
         editor.putString(KEY_USER_ROLE, role)
         editor.putString(KEY_USER_ID, id)
-        // Guardamos el ID de estudiante si existe
-        if (studentId != null) {
-            editor.putString(KEY_STUDENT_ID, studentId)
-        }
+
+        if (studentId != null) editor.putString(KEY_STUDENT_ID, studentId)
+        if (matricula != null) editor.putString(KEY_MATRICULA, matricula) //  Guardar
+
         editor.apply()
     }
     fun getStudentId(): String? {
         return prefs.getString(KEY_STUDENT_ID, null)
     }
 
+    fun getMatricula(): String? {
+        return prefs.getString(KEY_MATRICULA, null)
+    }
+    fun getUserRole(): String? {
+        return prefs.getString(KEY_USER_ROLE, null)
+    }
     fun getToken(): String? {
         return prefs.getString(KEY_TOKEN, null)
     }
