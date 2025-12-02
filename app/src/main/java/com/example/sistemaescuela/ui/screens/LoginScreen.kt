@@ -75,7 +75,6 @@ fun LoginScreen(
                         coroutineScope.launch {
                             try {
                                 // Hacemos la petición
-                                // CORRECCIÓN: Usamos 'username' que es tu variable, y lo mandamos como 'correo'
                                 val response = RetrofitClient.api.login(
                                     LoginRequest(email = username , password)
                                 )
