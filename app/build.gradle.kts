@@ -60,4 +60,13 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // OkHttp Logging (Para ver en consola qué datos se envían)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+
+    // Corrutinas (Ya las tienes, pero asegúrate de tener esta para ViewModel)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+
 }
