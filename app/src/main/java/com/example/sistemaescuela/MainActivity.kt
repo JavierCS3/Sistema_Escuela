@@ -12,6 +12,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.sistemaescuela.ui.screens.*
 import com.example.sistemaescuela.ui.theme.SistemaEscuelaTheme
 
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
