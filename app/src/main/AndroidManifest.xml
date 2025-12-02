@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+<<<<<<< HEAD
     <uses-permission android:name="android.permission.INTERNET" />
+=======
+
+>>>>>>> 44757816577b2cc3f947e096052036431025394e
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -10,11 +14,15 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+<<<<<<< HEAD
 
         android:theme="@style/Theme.SistemaEscuela"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
+=======
+        android:theme="@style/Theme.SistemaEscuela">
+>>>>>>> 44757816577b2cc3f947e096052036431025394e
         <activity
             android:name=".MainActivity"
             android:exported="true"
