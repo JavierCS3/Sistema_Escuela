@@ -1,3 +1,4 @@
+
 package com.example.sistemaescuela.ui.screens
 
 import androidx.compose.foundation.layout.*
@@ -18,7 +19,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 
-// Enum labels updated for brevity
 enum class Screen(
     val route: String,
     val label: String,
@@ -26,18 +26,21 @@ enum class Screen(
 ) {
     PROFILE("profile", "Perfil", Icons.Default.Home),
     ACADEMIC_PROGRESS("progress", "Progreso", Icons.Default.Assessment),
-    TASKS("tasks", "Tareas", Icons.Default.Task),
+    TASKS("tasks", "Tareas", Icons.Default.Task), // Esta ruta mostrará SubjectsScreen
     MESSAGING("messaging", "Mensajes", Icons.AutoMirrored.Filled.Chat),
     ALERTS("alerts", "Alertas"),
     SETTINGS("settings", "Configuración"),
-    CHAT("chat/{contactName}", "Chat")
+    CHAT("chat/{contactName}", "Chat"),
+    TASK_LIST("task_list/{materiaId}", "Lista de Tareas") // Nueva ruta interna
 }
 
 const val CONTACT_NAME_ARG = "contactName"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainMenuScreen(onLogoutClick: () -> Unit) {
+fun MainMenuScreen(
+    onLogoutClick: () -> Unit // <--- ¡ESTO ES LO QUE FALTABA!
+) {
     val navController = rememberNavController()
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -46,22 +49,22 @@ fun MainMenuScreen(onLogoutClick: () -> Unit) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val currentScreenRoute = currentDestination?.route
     val currentScreen = Screen.values().find {
         val routePattern = it.route.substringBefore("/")
-        currentScreenRoute?.startsWith(routePattern) == true
+        currentDestination?.route?.startsWith(routePattern) == true
     } ?: Screen.PROFILE
 
+    // Es pantalla principal si está en la lista de bottomNavScreens
     val isTopLevelScreen = bottomNavScreens.any { it.route == currentDestination?.route }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    if (currentScreen.route.startsWith("chat")) {
+                    if (currentScreen == Screen.CHAT) {
                         val contactName = navBackStackEntry?.arguments?.getString(CONTACT_NAME_ARG) ?: ""
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Person, contentDescription = "Avatar", modifier = Modifier.size(32.dp))
+                            Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(32.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(contactName)
                         }
@@ -77,13 +80,14 @@ fun MainMenuScreen(onLogoutClick: () -> Unit) {
                     }
                 },
                 actions = {
+                    // El menú de opciones solo aparece en pantallas principales
                     if (isTopLevelScreen) {
                         IconButton(onClick = { navController.navigate(Screen.ALERTS.route) }) {
                             Icon(Icons.Default.Notifications, contentDescription = "Alertas")
                         }
                         Box {
                             IconButton(onClick = { menuExpanded = true }) {
-                                Icon(Icons.Default.MoreVert, contentDescription = "Más opciones")
+                                Icon(Icons.Default.MoreVert, contentDescription = "Opciones")
                             }
                             DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
                                 DropdownMenuItem(
@@ -99,7 +103,7 @@ fun MainMenuScreen(onLogoutClick: () -> Unit) {
                                     leadingIcon = { Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null) },
                                     onClick = {
                                         menuExpanded = false
-                                        onLogoutClick()
+                                        onLogoutClick() // Ahora sí funciona
                                     }
                                 )
                             }
@@ -115,25 +119,59 @@ fun MainMenuScreen(onLogoutClick: () -> Unit) {
                         val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
                         NavigationBarItem(
                             icon = { Icon(screen.icon!!, contentDescription = screen.label) },
-                            label = { Text(screen.label, textAlign = TextAlign.Center) },
+                            label = { Text(screen.label) },
                             selected = isSelected,
-                            onClick = { navController.navigate(screen.route) { launchSingleTop = true } },
-                            colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.secondaryContainer)
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
                         )
                     }
                 }
             }
         }
     ) { innerPadding ->
-        NavHost(navController, startDestination = Screen.PROFILE.route, modifier = Modifier.padding(innerPadding)) {
+        NavHost(
+            navController,
+            startDestination = Screen.PROFILE.route,
+            modifier = Modifier.padding(innerPadding)
+        ) {
             composable(Screen.PROFILE.route) { StudentProfileScreen() }
+
             composable(Screen.ACADEMIC_PROGRESS.route) { AcademicProgressScreen() }
-            composable(Screen.TASKS.route) { TasksScreen() }
+
+            // --- FLUJO DE TAREAS CORREGIDO ---
+            // 1. La pestaña "Tareas" muestra las MATERIAS primero
+            composable(Screen.TASKS.route) {
+                SubjectsScreen(
+                    onMateriaClick = { materiaId ->
+                        // Navegar a la lista de tareas de esa materia
+                        navController.navigate("task_list/$materiaId")
+                    }
+                )
+            }
+
+            // 2. Pantalla de Tareas específica (recibe el ID)
+            composable(
+                route = Screen.TASK_LIST.route,
+                arguments = listOf(navArgument("materiaId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val materiaId = backStackEntry.arguments?.getString("materiaId") ?: ""
+                TasksScreen(materiaId = materiaId)
+            }
+            // ----------------------------------
+
             composable(Screen.MESSAGING.route) {
                 MessagingScreen(onContactClick = { contactName -> navController.navigate("chat/$contactName") })
             }
+
             composable(Screen.ALERTS.route) { AlertsScreen() }
+
             composable(Screen.SETTINGS.route) { SettingsScreen(onNavigateUp = { navController.popBackStack() }) }
+
             composable(
                 route = Screen.CHAT.route,
                 arguments = listOf(navArgument(CONTACT_NAME_ARG) { type = NavType.StringType })

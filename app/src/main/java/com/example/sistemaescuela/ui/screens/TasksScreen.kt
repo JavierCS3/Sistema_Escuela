@@ -16,7 +16,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TasksScreen() {
+fun TasksScreen(
+    materiaId: String //
+){
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val tokenManager = TokenManager(context)
@@ -26,8 +28,7 @@ fun TasksScreen() {
     var mensajeError by remember { mutableStateOf<String?>(null) }
     var cargando by remember { mutableStateOf(true) }
 
-    // --- ID DE PRUEBA ---
-    val materiaIdPrueba = "6909c7ff8b6bf3718104474d"
+
 
     // Efecto que se ejecuta al iniciar la pantalla
     LaunchedEffect(Unit) {
@@ -39,7 +40,7 @@ fun TasksScreen() {
                 // Llamada al Backend
                 val response = RetrofitClient.api.obtenerProgreso(
                     token = "Bearer $token",
-                    materiaId = materiaIdPrueba,
+                    materiaId = materiaId,
                     estudianteId = studentId
                 )
 

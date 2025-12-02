@@ -3,34 +3,41 @@ package com.example.sistemaescuela
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.sistemaescuela.ui.screens.*
 import com.example.sistemaescuela.ui.theme.SistemaEscuelaTheme
-
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             SistemaEscuelaTheme {
-                SistemaEscuelaApp()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNavigation()
+                }
             }
         }
     }
 }
 
 @Composable
-fun SistemaEscuelaApp() {
+fun AppNavigation() {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "login") {
+
         composable("login") {
             LoginScreen(
                 onLoginClick = {
@@ -38,43 +45,20 @@ fun SistemaEscuelaApp() {
                         popUpTo("login") { inclusive = true }
                     }
                 },
-                onActivateAccountClick = { navController.navigate("activation") },
-                onForgotPasswordClick = { navController.navigate("forgot_password") }
+                onActivateAccountClick = { /* ... */ },
+                onForgotPasswordClick = { /* ... */ }
             )
         }
-        composable("activation") {
-            ActivationScreen(
-                onActivateClick = {
-                    navController.navigate("main_menu") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                },
-                onNavigateUp = { navController.popBackStack() }
-            )
-        }
-        composable("forgot_password") {
-            ForgotPasswordScreen(
-                onSendLinkClick = { navController.popBackStack() },
-                onNavigateUp = { navController.popBackStack() }
-            )
-        }
+
         composable("main_menu") {
             MainMenuScreen(
                 onLogoutClick = {
+                    // Al cerrar sesión, volvemos al login y borramos historial
                     navController.navigate("login") {
-                        // Clear the entire back stack up to the root
-                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                        popUpTo(0)
                     }
                 }
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    SistemaEscuelaTheme {
-        LoginScreen(onLoginClick = {}, onActivateAccountClick = {}, onForgotPasswordClick = {})
     }
 }

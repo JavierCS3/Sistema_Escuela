@@ -28,5 +28,9 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("tareaId") tareaId: String,
         @Body entrega: EntregarTareaRequest
-    ): Response<Void> // Void porque solo nos importa si fue 201 Created
+    ): Response<Void>
+    @GET("inscripciones/mis-materias")
+    suspend fun obtenerMisMaterias(
+        @Header("Authorization") token: String
+    ): Response<List<Materia>>
 }
