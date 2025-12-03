@@ -87,9 +87,13 @@ fun LoginScreen(
                                     if (token != null && usuario != null) {
                                         val tokenManager = TokenManager(context)
                                         // Pasamos el estudianteId que viene del backend
-                                        tokenManager.saveSession(token, usuario.nombre, usuario.rol, usuario.id, usuario.estudianteId, usuario.matricula)
+                                        tokenManager.saveSession(
+                                            token, usuario.nombre, usuario.rol, usuario.id,
+                                            usuario.estudianteId, usuario.matricula
+                                        )
+                                        tokenManager.saveChildrenList(usuario.hijos)
 
-                                        Toast.makeText(context, "Bienvenido ${usuario.nombre}", Toast.LENGTH_LONG).show()
+
 
                                         // 2. Navegamos
                                         onLoginClick()

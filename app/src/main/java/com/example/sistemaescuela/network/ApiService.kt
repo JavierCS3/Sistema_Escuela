@@ -7,6 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Header
+import retrofit2.http.PUT
 
 interface ApiService {
     @POST("auth/login")
@@ -31,6 +32,13 @@ interface ApiService {
     ): Response<Void>
     @GET("inscripciones/mis-materias")
     suspend fun obtenerMisMaterias(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("estudianteId") estudianteId: String? // <-- Agrega este parámetro opcional
     ): Response<List<Materia>>
+
+    @PUT("tareas/entrega/{entregaId}/avalar")
+    suspend fun avalarTarea(
+        @Header("Authorization") token: String,
+        @Path("entregaId") entregaId: String
+    ): Response<Void>
 }

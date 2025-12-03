@@ -13,6 +13,7 @@ class TokenManager(context: Context) {
         private const val KEY_TOKEN = "jwt_token"
         private const val KEY_USER_NAME = "user_name"
         private const val KEY_USER_ROLE = "user_role"
+        private const val KEY_CHILDREN_LIST = "children_list_json"
         private const val KEY_USER_ID = "user_id"
     }
 
@@ -31,6 +32,25 @@ class TokenManager(context: Context) {
         return prefs.getString(KEY_STUDENT_ID, null)
     }
 
+    //  Función para guardar la lista de hijos (como JSON)
+    fun saveChildrenList(hijos: List<com.example.sistemaescuela.network.HijoVinculo>?) {
+        if (hijos != null) {
+            val json = com.google.gson.Gson().toJson(hijos)
+            editor.putString(KEY_CHILDREN_LIST, json)
+        }
+        editor.apply()
+    }
+
+    // Función para recuperar la lista (JSON)
+    fun getChildrenListJson(): String? {
+        return prefs.getString(KEY_CHILDREN_LIST, null)
+    }
+
+    //  Función para guardar el ID del hijo seleccionado (usa la misma llave que el estudiante normal)
+    fun saveSelectedStudentId(studentId: String) {
+        editor.putString(KEY_STUDENT_ID, studentId)
+        editor.apply()
+    }
     fun getMatricula(): String? {
         return prefs.getString(KEY_MATRICULA, null)
     }

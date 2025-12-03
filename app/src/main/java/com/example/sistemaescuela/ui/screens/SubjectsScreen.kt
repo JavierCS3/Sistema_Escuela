@@ -24,9 +24,13 @@ fun SubjectsScreen(
 
     LaunchedEffect(Unit) {
         val token = tokenManager.getToken()
+        val studentId = tokenManager.getStudentId()
         if (token != null) {
             try {
-                val response = RetrofitClient.api.obtenerMisMaterias("Bearer $token")
+                val response = RetrofitClient.api.obtenerMisMaterias(
+                    token = "Bearer $token",
+                    estudianteId = studentId
+                )
                 if (response.isSuccessful) {
                     listaMaterias = response.body() ?: emptyList()
                 }
@@ -36,7 +40,7 @@ fun SubjectsScreen(
         }
     }
 
-    // Nota: No usamos Scaffold aquí porque MainMenuScreen ya tiene uno
+
     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         item {
             Text("Selecciona una materia", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 16.dp))

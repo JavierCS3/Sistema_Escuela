@@ -26,12 +26,16 @@ enum class Screen(
 ) {
     PROFILE("profile", "Perfil", Icons.Default.Home),
     ACADEMIC_PROGRESS("progress", "Progreso", Icons.Default.Assessment),
-    TASKS("tasks", "Tareas", Icons.Default.Task), // Esta ruta mostrará SubjectsScreen
+    TASKS("tasks", "Tareas", Icons.Default.Task), // Esta es la pestaña (Muestra Materias)
     MESSAGING("messaging", "Mensajes", Icons.AutoMirrored.Filled.Chat),
     ALERTS("alerts", "Alertas"),
     SETTINGS("settings", "Configuración"),
     CHAT("chat/{contactName}", "Chat"),
-    TASK_LIST("task_list/{materiaId}", "Lista de Tareas") // Nueva ruta interna
+    TASK_DETAIL("task_detail/{title}/{desc}/{content}/{status}/{reqAval}/{entregaId}", "Detalle"),
+
+    // --- NUEVAS RUTAS ---
+    TASK_LIST("task_list/{materiaId}", "Lista de Tareas"),
+    SUBMIT_TASK("submit_task/{tareaId}/{titulo}", "Entregar Tarea")
 }
 
 const val CONTACT_NAME_ARG = "contactName"
@@ -39,7 +43,7 @@ const val CONTACT_NAME_ARG = "contactName"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenuScreen(
-    onLogoutClick: () -> Unit // <--- ¡ESTO ES LO QUE FALTABA!
+    onLogoutClick: () -> Unit //
 ) {
     val navController = rememberNavController()
     var menuExpanded by remember { mutableStateOf(false) }
@@ -144,11 +148,11 @@ fun MainMenuScreen(
             composable(Screen.ACADEMIC_PROGRESS.route) { AcademicProgressScreen() }
 
             // --- FLUJO DE TAREAS CORREGIDO ---
-            // 1. La pestaña "Tareas" muestra las MATERIAS primero
+            //
             composable(Screen.TASKS.route) {
                 SubjectsScreen(
                     onMateriaClick = { materiaId ->
-                        // Navegar a la lista de tareas de esa materia
+                        // Al dar clic en materia, vamos a la lista de tareas
                         navController.navigate("task_list/$materiaId")
                     }
                 )
@@ -160,9 +164,65 @@ fun MainMenuScreen(
                 arguments = listOf(navArgument("materiaId") { type = NavType.StringType })
             ) { backStackEntry ->
                 val materiaId = backStackEntry.arguments?.getString("materiaId") ?: ""
-                TasksScreen(materiaId = materiaId)
+
+                TasksScreen(
+                    materiaId = materiaId,
+                    onTaskClick = { taskId, titulo -> /* Lógica de alumno (entregar) */
+                        navController.navigate("submit_task/$taskId/$titulo")
+                    },
+                    // NUEVO: Callback para ver detalle (Padre)
+                    onViewDetailClick = { titulo, desc, contenido, estado, reqAval, entregaId ->
+                        // Codificamos para que sea seguro pasarlo por URL
+                        val encDesc = java.net.URLEncoder.encode(desc, "UTF-8")
+                        val encCont = java.net.URLEncoder.encode(contenido ?: "", "UTF-8")
+                        val idSeguro = entregaId ?: "null"
+
+                        navController.navigate("task_detail/$titulo/$encDesc/$encCont/$estado/$reqAval/$idSeguro")
+                    }
+                )
             }
-            // ----------------------------------
+            composable(
+                route = "task_detail/{title}/{desc}/{content}/{status}/{reqAval}/{entregaId}",
+                arguments = listOf(
+                    navArgument("title") { type = NavType.StringType },
+                    navArgument("desc") { type = NavType.StringType },
+                    navArgument("content") { type = NavType.StringType },
+                    navArgument("status") { type = NavType.StringType },
+                    navArgument("reqAval") { type = NavType.BoolType },
+                    navArgument("entregaId") { type = NavType.StringType }
+                )
+            ) { entry ->
+                TaskDetailScreen(
+                    titulo = entry.arguments?.getString("title") ?: "",
+                    descripcion = entry.arguments?.getString("desc") ?: "",
+                    contenidoEntrega = entry.arguments?.getString("content") ?: "",
+                    estado = entry.arguments?.getString("status") ?: "",
+                    requiereAval = entry.arguments?.getBoolean("reqAval") ?: false,
+                    entregaId = entry.arguments?.getString("entregaId").takeIf { it != "null" },
+                    onNavigateUp = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = Screen.SUBMIT_TASK.route,
+                arguments = listOf(
+                    navArgument("tareaId") { type = NavType.StringType },
+                    navArgument("titulo") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val tareaId = backStackEntry.arguments?.getString("tareaId") ?: ""
+                val titulo = backStackEntry.arguments?.getString("titulo") ?: "Tarea"
+
+                SubmitTaskScreen(
+                    tareaId = tareaId,
+                    tituloTarea = titulo,
+                    onNavigateUp = { navController.popBackStack() },
+                    onSuccess = {
+
+                        navController.popBackStack()
+                    }
+                )
+            }
 
             composable(Screen.MESSAGING.route) {
                 MessagingScreen(onContactClick = { contactName -> navController.navigate("chat/$contactName") })
