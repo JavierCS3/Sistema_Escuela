@@ -167,29 +167,44 @@ fun MainMenuScreen(
 
                 TasksScreen(
                     materiaId = materiaId,
-                    onTaskClick = { taskId, titulo -> /* Lógica de alumno (entregar) */
+                    onTaskClick = { taskId, titulo ->
                         navController.navigate("submit_task/$taskId/$titulo")
                     },
-                    // NUEVO: Callback para ver detalle (Padre)
-                    onViewDetailClick = { titulo, desc, contenido, estado, reqAval, entregaId ->
-                        // Codificamos para que sea seguro pasarlo por URL
+                    // Actualizamos el callback
+                    onViewDetailClick = { titulo, desc, contenido, estado, reqAval, entregaId, archivoUrl ->
+
+                        val encTitulo = java.net.URLEncoder.encode(titulo, "UTF-8")
                         val encDesc = java.net.URLEncoder.encode(desc, "UTF-8")
-                        val encCont = java.net.URLEncoder.encode(contenido ?: "", "UTF-8")
+
+                        // Contenido seguro
+                        val contenidoSeguro = if (contenido.isNullOrBlank()) "SIN_CONTENIDO" else contenido
+                        val encCont = java.net.URLEncoder.encode(contenidoSeguro, "UTF-8")
+
                         val idSeguro = entregaId ?: "null"
 
-                        navController.navigate("task_detail/$titulo/$encDesc/$encCont/$estado/$reqAval/$idSeguro")
+                        // --- NUEVO: URL SEGURA ---
+                        // Si no hay link, mandamos "SIN_URL". Si hay, lo codificamos (importante por los slashes /)
+                        val urlSegura = if (archivoUrl.isNullOrBlank()) "SIN_URL" else java.net.URLEncoder.encode(archivoUrl, "UTF-8")
+                        // -------------------------
+
+                        // Agregamos la urlSegura al final de la ruta
+                        navController.navigate("task_detail/$encTitulo/$encDesc/$encCont/$estado/$reqAval/$idSeguro/$urlSegura")
                     }
                 )
             }
+
+
             composable(
-                route = "task_detail/{title}/{desc}/{content}/{status}/{reqAval}/{entregaId}",
+                // Agregamos /{fileUrl} al final de la ruta
+                route = "task_detail/{title}/{desc}/{content}/{status}/{reqAval}/{entregaId}/{fileUrl}",
                 arguments = listOf(
                     navArgument("title") { type = NavType.StringType },
                     navArgument("desc") { type = NavType.StringType },
                     navArgument("content") { type = NavType.StringType },
                     navArgument("status") { type = NavType.StringType },
                     navArgument("reqAval") { type = NavType.BoolType },
-                    navArgument("entregaId") { type = NavType.StringType }
+                    navArgument("entregaId") { type = NavType.StringType },
+                    navArgument("fileUrl") { type = NavType.StringType } // <--- Nuevo argumento
                 )
             ) { entry ->
                 TaskDetailScreen(
@@ -199,6 +214,8 @@ fun MainMenuScreen(
                     estado = entry.arguments?.getString("status") ?: "",
                     requiereAval = entry.arguments?.getBoolean("reqAval") ?: false,
                     entregaId = entry.arguments?.getString("entregaId").takeIf { it != "null" },
+                    // Pasamos la URL a la pantalla
+                    archivoUrl = entry.arguments?.getString("fileUrl"),
                     onNavigateUp = { navController.popBackStack() }
                 )
             }

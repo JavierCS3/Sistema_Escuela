@@ -23,7 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 fun TasksScreen(
     materiaId: String,
     onTaskClick: (String, String) -> Unit,
-    onViewDetailClick: (String, String, String?, String, Boolean, String?) -> Unit // <--- NUEVO PARÁMETRO
+    // Agregamos un String? al final para el archivoUrl
+    onViewDetailClick: (String, String, String?, String, Boolean, String?, String?) -> Unit
 ) {
     val context = LocalContext.current
     val tokenManager = TokenManager(context)
@@ -130,7 +131,8 @@ fun TasksScreen(
                                                     tarea.entrega.contenidoTexto,
                                                     tarea.entrega.estado,
                                                     tarea.requiereAval,
-                                                    tarea.entrega.id
+                                                    tarea.entrega.id,
+                                                    tarea.entrega.archivoUrl
                                                 )
                                             },
                                             modifier = Modifier.fillMaxWidth()
@@ -143,19 +145,21 @@ fun TasksScreen(
                                             }
                                         }
                                     } else {
-                                        // Tarea pendiente
+                                        // --- TAREA PENDIENTE ---
                                         Text(text = "Estado: Pendiente", color = Color.Red)
 
                                         Spacer(modifier = Modifier.height(8.dp))
 
-                                        Button(
-                                            onClick = {
-
-                                                onTaskClick(tarea.id, tarea.tarea)
-                                            },
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Text("Entregar")
+                                        // CORRECCIÓN: Solo mostramos el botón si es ESTUDIANTE
+                                        if (rolUsuario == "Estudiante") {
+                                            Button(
+                                                onClick = {
+                                                    onTaskClick(tarea.id, tarea.tarea)
+                                                },
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Text("Entregar")
+                                            }
                                         }
                                     }
                                 }
